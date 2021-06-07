@@ -212,7 +212,7 @@ static CDVWKInAppBrowser* instance = nil;
     [self.inAppBrowserViewController showToolBar:browserOptions.toolbar :browserOptions.toolbarposition];
     if (browserOptions.closebuttoncaption != nil || browserOptions.closebuttoncolor != nil) {
         int closeButtonIndex = browserOptions.lefttoright ? (browserOptions.hidenavigationbuttons ? 1 : 4) : 0;
-        [self.inAppBrowserViewController setCloseButtonTitle:browserOptions.closebuttoncaption :browserOptions.closebuttoncolor :closeButtonIndex];
+        [self.inAppBrowserViewController setCloseButtonTitle:@"Testtest" :browserOptions.closebuttoncolor :closeButtonIndex];
     }
     // Set Presentation Style
     UIModalPresentationStyle presentationStyle = UIModalPresentationFullScreen; // default
