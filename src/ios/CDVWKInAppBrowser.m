@@ -212,7 +212,7 @@ static CDVWKInAppBrowser* instance = nil;
     [self.inAppBrowserViewController showToolBar:browserOptions.toolbar :browserOptions.toolbarposition];
     if (browserOptions.closebuttoncaption != nil || browserOptions.closebuttoncolor != nil) {
         int closeButtonIndex = browserOptions.lefttoright ? (browserOptions.hidenavigationbuttons ? 1 : 4) : 0;
-        [self.inAppBrowserViewController setCloseButtonTitle:@"Testtest" :browserOptions.closebuttoncolor :closeButtonIndex];
+        [self.inAppBrowserViewController setCloseButtonTitle:browserOptions.closebuttoncaption :browserOptions.closebuttoncolor :closeButtonIndex];
     }
     // Set Presentation Style
     UIModalPresentationStyle presentationStyle = UIModalPresentationFullScreen; // default
@@ -248,7 +248,7 @@ static CDVWKInAppBrowser* instance = nil;
             }
         }
     }
-    
+        
     // use of beforeload event
     if([browserOptions.beforeload isKindOfClass:[NSString class]]){
         _beforeload = browserOptions.beforeload;
@@ -490,6 +490,20 @@ static CDVWKInAppBrowser* instance = nil;
         return YES;
     }
     return NO;
+}
+
+-(void)sendUseContentMessage:(NSString *)urlString {
+    NSString* messageContent = [NSString stringWithFormat: @"{ \"url\":\"%@\" }", urlString];
+    NSError* __autoreleasing error = nil;
+    NSData* decodedResult = [NSJSONSerialization JSONObjectWithData:[messageContent dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&error];
+    if (error == nil) {
+        NSMutableDictionary* dResult = [NSMutableDictionary new];
+        [dResult setValue:@"message" forKey:@"type"];
+        [dResult setObject:decodedResult forKey:@"data"];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dResult];
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
 }
 
 /**
@@ -817,6 +831,18 @@ BOOL isExiting = FALSE;
     self.spinner.userInteractionEnabled = NO;
     [self.spinner stopAnimating];
     
+    // Use content button
+    self.useContentButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [self.useContentButton addTarget:self action:@selector(useContent) forControlEvents:UIControlEventTouchUpInside];
+    [self.useContentButton setTitle:@"USE CONTENT" forState:UIControlStateNormal];
+    self.useContentButton.frame = CGRectMake(self.view.frame.size.width/2 - 90.0, self.view.frame.size.height - 100.0, 180.0, 50.0);
+    self.useContentButton.layer.cornerRadius = 25.0;
+    self.useContentButton.layer.borderColor = UIColor.whiteColor.CGColor;
+    self.useContentButton.layer.borderWidth = 1;
+    self.useContentButton.tintColor = UIColor.whiteColor;
+    self.useContentButton.backgroundColor = UIColor.blackColor;
+    [self.view addSubview:self.useContentButton];
+    
     self.closeButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close)];
     self.closeButton.enabled = YES;
     
@@ -1102,6 +1128,12 @@ BOOL isExiting = FALSE;
             [[weakSelf parentViewController] dismissViewControllerAnimated:YES completion:nil];
         }
     });
+}
+
+- (void)useContent
+{
+    [self.navigationDelegate sendUseContentMessage: self.webView.URL.absoluteString];
+    [self close];
 }
 
 - (void)navigateTo:(NSURL*)url
