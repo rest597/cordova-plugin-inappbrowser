@@ -818,6 +818,38 @@ public class InAppBrowser extends CordovaPlugin {
                 actionButtonContainer.setVerticalGravity(Gravity.CENTER_VERTICAL);
                 actionButtonContainer.setId(leftToRight ? Integer.valueOf(5) : Integer.valueOf(1));
 
+                // Use Content button
+                ImageButton uc = new ImageButton(cordova.getActivity());
+                RelativeLayout.LayoutParams ucLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                ucLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                ucLayoutParams.addRule( RelativeLayout.ALIGN_PARENT_BOTTOM);
+                uc.setLayoutParams(ucLayoutParams);
+                uc.setContentDescription("Use Content");
+                uc.setId(Integer.valueOf(10));
+                Resources activityRes = cordova.getActivity().getResources();
+                int ucResId = activityRes.getIdentifier("ic_action_use_content", "drawable", cordova.getActivity().getPackageName());
+                Drawable ucIcon = activityRes.getDrawable(ucResId);
+                uc.setBackground(null);
+                uc.setImageDrawable(ucIcon);
+                uc.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                uc.setPadding(0, this.dpToPixels(10), 0, this.dpToPixels(60));
+                uc.getAdjustViewBounds();
+
+                uc.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        try {
+                            JSONObject dataObj = new JSONObject();
+                            dataObj.put("url", webView.getUrl());
+                            JSONObject obj = new JSONObject();
+                            obj.put("type", MESSAGE_EVENT);
+                            obj.put("data", dataObj);
+                            sendUpdate(obj, true);
+                        }catch (JSONException ex) {
+                            LOG.d(LOG_TAG, "Should never happen");
+                        }
+                    }
+                });
+
                 // Back button
                 ImageButton back = new ImageButton(cordova.getActivity());
                 RelativeLayout.LayoutParams backLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
@@ -825,7 +857,6 @@ public class InAppBrowser extends CordovaPlugin {
                 back.setLayoutParams(backLayoutParams);
                 back.setContentDescription("Back Button");
                 back.setId(Integer.valueOf(2));
-                Resources activityRes = cordova.getActivity().getResources();
                 int backResId = activityRes.getIdentifier("ic_action_previous_item", "drawable", cordova.getActivity().getPackageName());
                 Drawable backIcon = activityRes.getDrawable(backResId);
                 if (navigationButtonColor != "") back.setColorFilter(android.graphics.Color.parseColor(navigationButtonColor));
@@ -914,7 +945,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // WebView
                 inAppWebView = new WebView(cordova.getActivity());
-                inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+                inAppWebView.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                 inAppWebView.setId(Integer.valueOf(6));
                 // File Chooser Implemented ChromeClient
                 inAppWebView.setWebChromeClient(new InAppChromeClient(thatWebView) {
@@ -1019,6 +1050,10 @@ public class InAppBrowser extends CordovaPlugin {
                 // Add our webview to our main view/layout
                 RelativeLayout webViewLayout = new RelativeLayout(cordova.getActivity());
                 webViewLayout.addView(inAppWebView);
+
+                // Add use content button
+                webViewLayout.addView(uc);
+
                 main.addView(webViewLayout);
 
                 // Don't add the footer unless it's been enabled
